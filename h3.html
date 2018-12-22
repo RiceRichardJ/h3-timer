@@ -49,17 +49,25 @@
 				height: 20px;
 				border: 1px solid white;
 			}
-			snipeClock, gameClock {
+			gameClock {
 				font-size: 150%;
 				height: 20px;
 				border: 1px solid white;
-				border: 1px solid white;
+				display: block;
+			}
+			snipeClock {
+				font-size: 150%;
+				height: 20px;
 				display: block;
 			}
 			.alert {
 				color: red;
-				font-size: 200%;
+				font-size: 500%;
 				font-weight: bold;
+			}
+			.done {
+				background-color: red;
+				color: white !important;
 			}
 		</style>
 	</head>
@@ -74,8 +82,8 @@
 				<tr>
 					<td width="25%" rowspan="2"><mapSelect></mapSelect></td>
 					<td width="25%"></td>
-					<td width="25%">
-						Next snipe in: <snipeClock></snipeClock><br/>
+					<td width="25%" id="td-snipe">
+						Next snipe in: <snipeClock></snipeClock><br/><br/><br/><br/>
 						<button id="snipePickUp">Picked Up Snipe</button>
 					</td>
 					<td width="25%"></td>
@@ -98,17 +106,16 @@
 <script>
 $(document).ready(function(){
 	setup();
-	var snipeSpawn = 2 * 60;
+	var snipeSpawn = 120;
 	var gameDuration = 12 * 60;
 
 	var snipePickUp = 0;
 	$("#snipePickUp").click(function() {
-		if ( ! $("mapName").html() ) { return; }
+		var mapName = $("mapName").html();
+		if ( ! mapName ) { return; }
+		snipeSpawn = maps[mapName].snipe;
+		$("snipeClock, #td-snipe").removeClass("alert").removeClass("done");
 		snipePickUp = Math.ceil(new Date().getTime() / 1000);
-		var snipeTimer = setInterval(function() {
-			alert("SNIPE IS UP.");
-			window.clearInterval(snipeTimer);
-		}, 2 * 60 * 1000);
 	});
 
 	var gameStart = 0;
@@ -117,19 +124,22 @@ $(document).ready(function(){
 		gameStart = Math.ceil(new Date().getTime() / 1000);
 	});
 
-	var paint = setInterval(function() {
+	var snipeClock = setInterval(function() {
 		if (snipePickUp == 0) { return; }
 		var now = Math.ceil(new Date().getTime() / 1000);
 		var rem = snipeSpawn + snipePickUp - now;
-		$("snipeClock").html(  rem > 0 ? secToTime(rem) : 0  );
-	}, 1000);
+		if (rem <= 15) { $("snipeClock").addClass("alert"); }
+		if (rem == 0) { $("#td-snipe, snipeClock").addClass("done"); }
+		rem = rem > 0 ? rem : 0;
+		$("snipeClock").html( secToTime(rem) );
+	}, 500);
 
 	var gameClock = setInterval(function() {
 		if (gameStart == 0) { return; }
 		var now = Math.ceil(new Date().getTime() / 1000);
 		var rem = gameDuration + gameStart - now;
 		$("gameClock").html(  rem > 0 ? secToTime(rem) : 0  );
-	}, 1000);
+	}, 500);
 
 	$("select").change(function() {
 		// var selectedMap = $('#aioConceptName').find(":selected").text();
@@ -144,36 +154,36 @@ function secToTime(sec) {
 	return min + ":" + sec;
 }
 
-var maps = [
-	{ "name":"Avalanche"   , "snipe": 120 , "rocks": 60 },
-	{ "name":"Assembly"    , "snipe":   0 , "rocks": 120 },
-	{ "name":"Blackout"    , "snipe": 180 , "rocks": 0 },
-	{ "name":"Boundless"   , "snipe": 180 , "rocks": 0 },
-	{ "name":"Citadel"     , "snipe":   0 , "rocks": 120 },
-	{ "name":"Cold Storage", "snipe": 120 , "rocks": 120 },
-	{ "name":"Construct"   , "snipe": 180 , "rocks": 0 },
-	{ "name":"Epilogue"    , "snipe":   0 , "rocks": 120 },
-	{ "name":"Foundry"     , "snipe":  90 , "rocks": 90 },
-	{ "name":"Ghost Town"  , "snipe": 120 , "rocks": 180 },
-	{ "name":"Guardian"    , "snipe": 180 , "rocks": 0 },
-	{ "name":"Heretic"     , "snipe":   0 , "rocks": 0 },
-	{ "name":"High Ground" , "snipe":  90 , "rocks": 120 },
-	{ "name":"Isolation"   , "snipe": 180 , "rocks": 180 },
-	{ "name":"Last Resort" , "snipe": 120 , "rocks": 0 },
-	{ "name":"Narrows MM"  , "snipe": 150 , "rocks": 120 },
-	{ "name":"Orbital"     , "snipe": 120 , "rocks": 120 },
-	{ "name":"Pantheon"    , "snipe":   0 , "rocks": 0 },
-	{ "name":"Pit"         , "snipe": 120 , "rocks": 180 },
-	{ "name":"Snowbound"   , "snipe":   0 , "rocks": 180 },
-	{ "name":"Standoff"    , "snipe":   0 , "rocks": 0 },
-	{ "name":"Tundra"      , "snipe": 120 , "rocks": 0 },
-	{ "name":"Rat's Nest"  , "snipe": 150 , "rocks": 0 },
-	{ "name":"Valhalla"    , "snipe": 180 , "rocks": 0 }
-];
+var maps = {
+	"Avalanche"    : { "snipe": 120 , "rocks": 60 },
+	"Assembly"     : {  "rocks": 120 },
+	"Blackout"     : { "snipe": 180 , "rocks": 0 },
+	"Boundless"    : { "snipe": 180 , "rocks": 0 },
+	"Citadel"      : { "snipe":   0 , "rocks": 120 },
+	"Cold Storage" : { "snipe": 120 , "rocks": 120 },
+	"Construct"    : { "snipe": 180 , "rocks": 0 },
+	"Epilogue"     : { "snipe":   0 , "rocks": 120 },
+	"Foundry"      : { "snipe":  90 , "rocks": 90 },
+	"Ghost Town"   : { "snipe": 120 , "rocks": 180 },
+	"Guardian"     : { "snipe": 180 , "rocks": 0 },
+	"Heretic"      : { "snipe":   0 , "rocks": 0 },
+	"High Ground"  : { "snipe":  90 , "rocks": 120 },
+	"Isolation"    : { "snipe": 180 , "rocks": 180 },
+	"Last Resort"  : { "snipe": 120 , "rocks": 0 },
+	"Narrows MM"   : { "snipe": 150 , "rocks": 120 },
+	"Orbital"      : { "snipe": 120 , "rocks": 120 },
+	"Pantheon"     : { "snipe":   0 , "rocks": 0 },
+	"Pit"          : { "snipe": 120 , "rocks": 180 },
+	"Snowbound"    : { "snipe":   0 , "rocks": 180 },
+	"Standoff"     : { "snipe":   0 , "rocks": 0 },
+	"Tundra"       : { "snipe": 120 , "rocks": 0 },
+	"Rat's Nest"   : { "snipe": 150 , "rocks": 0 },
+	"Valhalla"     : { "snipe": 180 , "rocks": 0 }
+};
 function setup() {
 	var mapSelect = $("<select multiple autofocus>");
-	for (map of maps) {
-		var mapOption = $("<option>").val(map.name).html(map.name);
+	for (map in maps) {
+		var mapOption = $("<option>").val(map).html(map);
 		mapSelect.append( mapOption );
 	}
 	$("mapSelect").append(mapSelect);
