@@ -1,0 +1,191 @@
+<html>
+	<head>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"> -->
+		<link href="https://fonts.googleapis.com/css?family=Lato:300" rel="stylesheet">
+		<style>
+			* {
+				margin: 5px;
+				padding: 5px;
+			}
+			body {
+				font: 100% 'Lato', sans-serif;
+			}
+			table {
+				border-collapse: collapse ;
+			}
+			td {
+				text-align: center;
+				margin: 0px;
+				border-right: 1px solid #ddd;
+			}
+			select {
+				height: 400px;
+				border: 0px;
+				outline: none;
+				width: 65%;
+			}
+			option:hover {
+				background-color: #ddd;
+			}
+			option {
+				border-bottom: 1px solid #ddd;
+				/* margin: -1px; */
+			}
+			btn {
+				color: black;
+				width: 25%;
+				font-size: 200%;
+			}
+			or {
+				position: relative;
+				bottom: 3px;
+			}
+			#legend td {
+				color: #bbb;
+			}
+			mapName {
+				font-size: 200%;
+				height: 20px;
+				border: 1px solid white;
+			}
+			snipeClock, gameClock {
+				font-size: 150%;
+				height: 20px;
+				border: 1px solid white;
+				border: 1px solid white;
+				display: block;
+			}
+			.alert {
+				color: red;
+				font-size: 200%;
+				font-weight: bold;
+			}
+		</style>
+	</head>
+	<body style="padding: 10">
+			<table border="0" width="100%" height="50%">
+				<tr>
+					<td colspan="4">
+						<mapName></mapName><br/>
+						<gameClock></gameClock><br/>
+					</td>
+				</tr>
+				<tr>
+					<td width="25%" rowspan="2"><mapSelect></mapSelect></td>
+					<td width="25%"></td>
+					<td width="25%">
+						Next snipe in: <snipeClock></snipeClock><br/>
+						<button id="snipePickUp">Picked Up Snipe</button>
+					</td>
+					<td width="25%"></td>
+				</tr>
+				<tr>
+					<td colspan="3"><button id="start">Start</button></td>
+				</tr>
+		</table>
+		<br/><br/>
+		<table id="legend" width="100%"><tr>
+			<td><btn>[G]</btn><br/>Press to start GAME timer.</td>
+			<td><btn>[R]</btn> <or>or</or> <btn>[1]</btn><br/>Press to start ROCKETS timer.</td>
+			<td><btn>[S]</btn> <or>or</or> <btn>[2]</btn><br/>Press to start SNIPE timer.</td>
+			<td><btn>[P]</btn> <or>or</or> <btn>[3]</btn><br/>Press to start POWERUP timer.</td>
+		</tr></table>
+		<br/><br/>
+		<center>
+			<a href="https://www.humanbenchmark.com/tests/reactiontime/">Test your alertness before game.</a>
+		</center>
+<script>
+$(document).ready(function(){
+	setup();
+	var snipeSpawn = 2 * 60;
+	var gameDuration = 12 * 60;
+
+	var snipePickUp = 0;
+	$("#snipePickUp").click(function() {
+		if ( ! $("mapName").html() ) { return; }
+		snipePickUp = Math.ceil(new Date().getTime() / 1000);
+		var snipeTimer = setInterval(function() {
+			alert("SNIPE IS UP.");
+			window.clearInterval(snipeTimer);
+		}, 2 * 60 * 1000);
+	});
+
+	var gameStart = 0;
+	$("#start").click(function() {
+		if ( ! $("mapName").html() ) { return; }
+		gameStart = Math.ceil(new Date().getTime() / 1000);
+	});
+
+	var paint = setInterval(function() {
+		if (snipePickUp == 0) { return; }
+		var now = Math.ceil(new Date().getTime() / 1000);
+		var rem = snipeSpawn + snipePickUp - now;
+		$("snipeClock").html(  rem > 0 ? secToTime(rem) : 0  );
+	}, 1000);
+
+	var gameClock = setInterval(function() {
+		if (gameStart == 0) { return; }
+		var now = Math.ceil(new Date().getTime() / 1000);
+		var rem = gameDuration + gameStart - now;
+		$("gameClock").html(  rem > 0 ? secToTime(rem) : 0  );
+	}, 1000);
+
+	$("select").change(function() {
+		// var selectedMap = $('#aioConceptName').find(":selected").text();
+		$("mapName").html($(this).val()[0]);
+	});
+});
+
+function secToTime(sec) {
+	var min = Math.floor(sec / 60);
+	sec = sec % 60;
+	if (sec < 10) { sec = "0" + sec; }
+	return min + ":" + sec;
+}
+
+var maps = [
+	{ "name":"Avalanche"   , "snipe": 120 , "rocks": 60 },
+	{ "name":"Assembly"    , "snipe":   0 , "rocks": 120 },
+	{ "name":"Blackout"    , "snipe": 180 , "rocks": 0 },
+	{ "name":"Boundless"   , "snipe": 180 , "rocks": 0 },
+	{ "name":"Citadel"     , "snipe":   0 , "rocks": 120 },
+	{ "name":"Cold Storage", "snipe": 120 , "rocks": 120 },
+	{ "name":"Construct"   , "snipe": 180 , "rocks": 0 },
+	{ "name":"Epilogue"    , "snipe":   0 , "rocks": 120 },
+	{ "name":"Foundry"     , "snipe":  90 , "rocks": 90 },
+	{ "name":"Ghost Town"  , "snipe": 120 , "rocks": 180 },
+	{ "name":"Guardian"    , "snipe": 180 , "rocks": 0 },
+	{ "name":"Heretic"     , "snipe":   0 , "rocks": 0 },
+	{ "name":"High Ground" , "snipe":  90 , "rocks": 120 },
+	{ "name":"Isolation"   , "snipe": 180 , "rocks": 180 },
+	{ "name":"Last Resort" , "snipe": 120 , "rocks": 0 },
+	{ "name":"Narrows MM"  , "snipe": 150 , "rocks": 120 },
+	{ "name":"Orbital"     , "snipe": 120 , "rocks": 120 },
+	{ "name":"Pantheon"    , "snipe":   0 , "rocks": 0 },
+	{ "name":"Pit"         , "snipe": 120 , "rocks": 180 },
+	{ "name":"Snowbound"   , "snipe":   0 , "rocks": 180 },
+	{ "name":"Standoff"    , "snipe":   0 , "rocks": 0 },
+	{ "name":"Tundra"      , "snipe": 120 , "rocks": 0 },
+	{ "name":"Rat's Nest"  , "snipe": 150 , "rocks": 0 },
+	{ "name":"Valhalla"    , "snipe": 180 , "rocks": 0 }
+];
+function setup() {
+	var mapSelect = $("<select multiple autofocus>");
+	for (map of maps) {
+		var mapOption = $("<option>").val(map.name).html(map.name);
+		mapSelect.append( mapOption );
+	}
+	$("mapSelect").append(mapSelect);
+
+	document.addEventListener('keydown', function(e) {
+		// alert(e.keyCode);
+		if (e.keyCode == 71) { e.preventDefault(); $("#start").click(); }       // G
+		if (e.keyCode == 83) { e.preventDefault(); $("#snipePickUp").click(); } // S
+		// 49, 50, 51 = [1][2][3] // 82 = [R] // 80 = [P]
+	}.bind(this), false);
+}
+</script>
+
+	</body>
+</html>
